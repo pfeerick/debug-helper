@@ -1,5 +1,5 @@
-#ifndef DEBUG-HELPER_H
-#define DEBUG-HELPER_H
+#ifndef DEBUG_HELPER_H
+#define DEBUG_HELPER_H
 
 #if DEBUG == true
 #define DebugBegin(...) DEBUG_OI.begin(__VA_ARGS__)

@@ -63,9 +63,6 @@
     DEBUG_OI.print(F("IDF version:             "));                                                                                     \
     DEBUG_OI.println(ESP.getSdkVersion());                                                                                              \
     DEBUG_OI.println();                                                                                                                 \
-    DEBUG_OI.print(F("Reset reason:            "));                                                                                     \
-    DEBUG_OI.println(ESP.getResetReason());                                                                                             \
-    DEBUG_OI.println();                                                                                                                 \
     DEBUG_OI.print(F("Chip model:              "));                                                                                     \
     DEBUG_OI.println(ESP.getChipModel());                                                                                               \
     DEBUG_OI.print(F("Chip revision:           "));                                                                                     \

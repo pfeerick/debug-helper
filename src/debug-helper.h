@@ -41,13 +41,55 @@
     DEBUG_OI.print(F("Flash Chip Size (ID):    "));                                                                               \
     DEBUG_OI.println(ESP.getFlashChipRealSize());                                                                                 \
     DEBUG_OI.println();                                                                                                           \
-    DEBUG_OI.printf("Sketch size/left:        %u / %u\n", ESP.getSketchSize(), ESP.getFreeSketchSpace());                         \
-    DEBUG_OI.printf("Sketch usage:            %u%%\n", ((ESP.getFreeSketchSpace() + ESP.getSketchSize()) / ESP.getSketchSize())); \
-    DEBUG_OI.print(F("Sketch MD5:              "));                                                                               \
-    DEBUG_OI.println(ESP.getSketchMD5());                                                                                         \
-    DEBUG_OI.print(F("Heap free:               "));                                                                               \
-    DEBUG_OI.println(ESP.getFreeHeap());                                                                                          \
-    DEBUG_OI.println(F("======================= DEBUG INFO END ======================="));                                        \
+    DEBUG_OI.printf("Sketch size/left:        %u / %u\n", ESP.getSketchSize(), ESP.getFreeSketchSpace());                              \
+    DEBUG_OI.printf("Sketch usage:            %u%%\n", (ESP.getSketchSize() * 100 / (ESP.getSketchSize() + ESP.getFreeSketchSpace()))); \
+    DEBUG_OI.print(F("Sketch MD5:              "));                                                                                    \
+    DEBUG_OI.println(ESP.getSketchMD5());                                                                                              \
+    DEBUG_OI.println();                                                                                                                \
+    DEBUG_OI.print(F("Heap free:               "));                                                                                    \
+    DEBUG_OI.println(ESP.getFreeHeap());                                                                                               \
+    DEBUG_OI.print(F("Heap fragmentation:      "));                                                                                    \
+    DEBUG_OI.print(ESP.getHeapFragmentation());                                                                                        \
+    DEBUG_OI.println(F("%"));                                                                                                          \
+    DEBUG_OI.println(F("======================= DEBUG INFO END ======================="));                                             \
+  }
+#elif defined ARDUINO_ARCH_ESP32
+#define DebugInfo(...)                                                                                                                  \
+  {                                                                                                                                     \
+    DEBUG_OI.println("");                                                                                                               \
+    DEBUG_OI.println(F("====================== DEBUG INFO START ======================"));                                              \
+    DEBUG_OI.print(F("Build date/time:         "));                                                                                     \
+    DEBUG_OI.println(__DATE__ ", " __TIME__);                                                                                           \
+    DEBUG_OI.print(F("IDF version:             "));                                                                                     \
+    DEBUG_OI.println(ESP.getSdkVersion());                                                                                              \
+    DEBUG_OI.println();                                                                                                                 \
+    DEBUG_OI.print(F("Reset reason:            "));                                                                                     \
+    DEBUG_OI.println(ESP.getResetReason());                                                                                             \
+    DEBUG_OI.println();                                                                                                                 \
+    DEBUG_OI.print(F("Chip model:              "));                                                                                     \
+    DEBUG_OI.println(ESP.getChipModel());                                                                                               \
+    DEBUG_OI.print(F("Chip revision:           "));                                                                                     \
+    DEBUG_OI.println(ESP.getChipRevision());                                                                                            \
+    DEBUG_OI.print(F("CPU cores:               "));                                                                                     \
+    DEBUG_OI.println(ESP.getChipCores());                                                                                               \
+    DEBUG_OI.print(F("CPU frequency (MHz):     "));                                                                                     \
+    DEBUG_OI.println(ESP.getCpuFreqMHz());                                                                                              \
+    DEBUG_OI.println();                                                                                                                 \
+    DEBUG_OI.print(F("Flash chip size:         "));                                                                                     \
+    DEBUG_OI.println(ESP.getFlashChipSize());                                                                                           \
+    DEBUG_OI.println();                                                                                                                 \
+    DEBUG_OI.printf("Sketch size/left:        %u / %u\n", ESP.getSketchSize(), ESP.getFreeSketchSpace());                              \
+    DEBUG_OI.printf("Sketch usage:            %u%%\n", (ESP.getSketchSize() * 100 / (ESP.getSketchSize() + ESP.getFreeSketchSpace()))); \
+    DEBUG_OI.print(F("Sketch MD5:              "));                                                                                     \
+    DEBUG_OI.println(ESP.getSketchMD5());                                                                                               \
+    DEBUG_OI.println();                                                                                                                 \
+    DEBUG_OI.print(F("Heap free:               "));                                                                                     \
+    DEBUG_OI.println(ESP.getFreeHeap());                                                                                                \
+    DEBUG_OI.print(F("Heap min free:           "));                                                                                     \
+    DEBUG_OI.println(ESP.getMinFreeHeap());                                                                                             \
+    DEBUG_OI.print(F("Heap max alloc:          "));                                                                                     \
+    DEBUG_OI.println(ESP.getMaxAllocHeap());                                                                                            \
+    DEBUG_OI.println(F("======================= DEBUG INFO END ======================="));                                              \
   }
 #else
 #define DebugInfo(...)                                                                     \

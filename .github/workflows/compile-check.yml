@@ -1,0 +1,92 @@
+name: Compile Check
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  platformio:
+    name: PlatformIO (${{ matrix.platform }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [uno, esp8266, esp32]
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.x"
+      - uses: actions/cache@v5
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ runner.os }}-platformio
+      - uses: actions/cache@v5
+        with:
+          path: ~/.platformio
+          key: pio-${{ runner.os }}-${{ matrix.platform }}-${{ hashFiles('platformio.ini') }}
+          restore-keys: pio-${{ runner.os }}-${{ matrix.platform }}-
+      - name: Install PlatformIO
+        run: pip install platformio
+      - name: Compile (DEBUG=on)
+        run: pio run --environment ${{ matrix.platform }}_debug_on 2>&1 | tee /tmp/build_on.txt
+      - name: Compile (DEBUG=off)
+        run: pio run --environment ${{ matrix.platform }}_debug_off 2>&1 | tee /tmp/build_off.txt
+      - name: Size summary
+        if: always()
+        run: |
+          extract() { sed -n "s/^${1}:.*used \([0-9]*\) bytes.*/\1/p" "$2"; }
+          flash_on=$(extract Flash /tmp/build_on.txt)
+          ram_on=$(extract RAM   /tmp/build_on.txt)
+          flash_off=$(extract Flash /tmp/build_off.txt)
+          ram_off=$(extract RAM   /tmp/build_off.txt)
+          delta() { d=$((${2} - ${1})); [ "$d" -le 0 ] && echo "${d} B" || echo "+${d} B"; }
+          {
+            echo "## Size: \`${{ matrix.platform }}\`"
+            echo ""
+            echo "| Metric | DEBUG=on | DEBUG=off | Delta |"
+            echo "|--------|----------|-----------|-------|"
+            echo "| Flash  | ${flash_on} B | ${flash_off} B | $(delta $flash_on $flash_off) |"
+            echo "| RAM    | ${ram_on} B   | ${ram_off} B   | $(delta $ram_on $ram_off) |"
+          } >> $GITHUB_STEP_SUMMARY
+
+  arduino-cli:
+    name: Arduino CLI (${{ matrix.board.name }}, DEBUG=${{ matrix.debug }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        board:
+          - name: uno
+            fqbn: arduino:avr:uno
+            platforms: |
+              - name: arduino:avr
+          - name: esp8266
+            fqbn: esp8266:esp8266:nodemcuv2
+            platforms: |
+              - name: esp8266:esp8266
+                source-url: http://arduino.esp8266.com/stable/package_esp8266com_index.json
+          - name: esp32
+            fqbn: esp32:esp32:esp32
+            platforms: |
+              - name: esp32:esp32
+                source-url: https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
+        debug: [true, false]
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/cache@v5
+        with:
+          path: ~/.arduino15
+          key: arduino-${{ runner.os }}-${{ matrix.board.name }}-${{ hashFiles('.github/workflows/compile-check.yml') }}
+          restore-keys: arduino-${{ runner.os }}-${{ matrix.board.name }}-
+      - uses: arduino/compile-sketches@8ad258013fe38f6d78e7e9d59c59ffbd9e8acf9d
+        with:
+          fqbn: ${{ matrix.board.fqbn }}
+          platforms: ${{ matrix.board.platforms }}
+          sketch-paths: |
+            - .github/sketches/ci_test
+          libraries: |
+            - source-path: ./
+              name: debug-helper
+          cli-compile-flags: |
+            - --build-property=compiler.cpp.extra_flags=-DDEBUG=${{ matrix.debug }}

@@ -84,9 +84,19 @@ jobs:
           fqbn: ${{ matrix.board.fqbn }}
           platforms: ${{ matrix.board.platforms }}
           sketch-paths: |
-            - .github/sketches/ci_test
+            - extras/ci_test
           libraries: |
             - source-path: ./
               name: debug-helper
           cli-compile-flags: |
             - --build-property=compiler.cpp.extra_flags=-DDEBUG=${{ matrix.debug }}
+
+  arduino-lint:
+    name: Arduino Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: arduino/arduino-lint-action@v2
+        with:
+          library-manager: submit
+          compliance: strict

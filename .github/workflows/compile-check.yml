@@ -1,0 +1,62 @@
+name: Compile Check
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  platformio:
+    name: PlatformIO (${{ matrix.env }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        env:
+          - uno_debug_on
+          - uno_debug_off
+          - esp8266_debug_on
+          - esp8266_debug_off
+          - esp32_debug_on
+          - esp32_debug_off
+    steps:
+      - uses: actions/checkout@v6
+      - uses: astral-sh/setup-uv@v8.1.0
+      - name: Compile
+        run: uvx --from platformio pio run --environment ${{ matrix.env }}
+
+  arduino-cli:
+    name: Arduino CLI (${{ matrix.board.name }}, DEBUG=${{ matrix.debug }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        board:
+          - name: uno
+            fqbn: arduino:avr:uno
+            platforms: |
+              - name: arduino:avr
+          - name: esp8266
+            fqbn: esp8266:esp8266:nodemcuv2
+            platforms: |
+              - name: esp8266:esp8266
+                source-url: http://arduino.esp8266.com/stable/package_esp8266com_index.json
+          - name: esp32
+            fqbn: esp32:esp32:esp32
+            platforms: |
+              - name: esp32:esp32
+                source-url: https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
+        debug: [1, 0]
+    steps:
+      - uses: actions/checkout@v6
+      - uses: arduino/compile-sketches@v1
+        with:
+          fqbn: ${{ matrix.board.fqbn }}
+          platforms: ${{ matrix.board.platforms }}
+          sketch-paths: |
+            - .github/sketches/ci_test
+          libraries: |
+            - source-path: ./
+              name: debug-helper
+          build-properties:
+            Global:
+              - compiler.cpp.extra_flags=-DDEBUG=${{ matrix.debug }}

@@ -6,18 +6,12 @@ on:
 
 jobs:
   platformio:
-    name: PlatformIO (${{ matrix.env }})
+    name: PlatformIO (${{ matrix.platform }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        env:
-          - uno_debug_on
-          - uno_debug_off
-          - esp8266_debug_on
-          - esp8266_debug_off
-          - esp32_debug_on
-          - esp32_debug_off
+        platform: [uno, esp8266, esp32]
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
@@ -30,24 +24,31 @@ jobs:
       - uses: actions/cache@v5
         with:
           path: ~/.platformio
-          key: pio-${{ runner.os }}-${{ matrix.env }}-${{ hashFiles('platformio.ini') }}
-          restore-keys: pio-${{ runner.os }}-${{ matrix.env }}-
+          key: pio-${{ runner.os }}-${{ matrix.platform }}-${{ hashFiles('platformio.ini') }}
+          restore-keys: pio-${{ runner.os }}-${{ matrix.platform }}-
       - name: Install PlatformIO
         run: pip install platformio
-      - name: Compile
-        run: pio run --environment ${{ matrix.env }} 2>&1 | tee /tmp/build.txt
-      - name: Size report
+      - name: Compile (DEBUG=on)
+        run: pio run --environment ${{ matrix.platform }}_debug_on 2>&1 | tee /tmp/build_on.txt
+      - name: Compile (DEBUG=off)
+        run: pio run --environment ${{ matrix.platform }}_debug_off 2>&1 | tee /tmp/build_off.txt
+      - name: Size summary
         if: always()
         run: |
-          echo "## Size: \`${{ matrix.env }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Metric | Usage |" >> $GITHUB_STEP_SUMMARY
-          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
-          while IFS= read -r line; do
-            metric=$(echo "$line" | sed 's/:.*//')
-            detail=$(echo "$line" | sed 's/.*(\(.*\))/\1/')
-            echo "| ${metric} | ${detail} |" >> $GITHUB_STEP_SUMMARY
-          done < <(grep -E "^(RAM|Flash):" /tmp/build.txt)
+          extract() { sed -n "s/^${1}:.*used \([0-9]*\) bytes.*/\1/p" "$2"; }
+          flash_on=$(extract Flash /tmp/build_on.txt)
+          ram_on=$(extract RAM   /tmp/build_on.txt)
+          flash_off=$(extract Flash /tmp/build_off.txt)
+          ram_off=$(extract RAM   /tmp/build_off.txt)
+          delta() { d=$((${2} - ${1})); [ "$d" -le 0 ] && echo "${d} B" || echo "+${d} B"; }
+          {
+            echo "## Size: \`${{ matrix.platform }}\`"
+            echo ""
+            echo "| Metric | DEBUG=on | DEBUG=off | Delta |"
+            echo "|--------|----------|-----------|-------|"
+            echo "| Flash  | ${flash_on} B | ${flash_off} B | $(delta $flash_on $flash_off) |"
+            echo "| RAM    | ${ram_on} B   | ${ram_off} B   | $(delta $ram_on $ram_off) |"
+          } >> $GITHUB_STEP_SUMMARY
 
   arduino-cli:
     name: Arduino CLI (${{ matrix.board.name }}, DEBUG=${{ matrix.debug }})

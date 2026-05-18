@@ -26,7 +26,19 @@ jobs:
       - name: Install PlatformIO
         run: pip install platformio
       - name: Compile
-        run: pio run --environment ${{ matrix.env }}
+        run: pio run --environment ${{ matrix.env }} 2>&1 | tee /tmp/build.txt
+      - name: Size report
+        if: always()
+        run: |
+          echo "## Size: \`${{ matrix.env }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Usage |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          while IFS= read -r line; do
+            metric=$(echo "$line" | sed 's/:.*//')
+            detail=$(echo "$line" | sed 's/.*(\(.*\))/\1/')
+            echo "| ${metric} | ${detail} |" >> $GITHUB_STEP_SUMMARY
+          done < <(grep -E "^(RAM|Flash):" /tmp/build.txt)
 
   arduino-cli:
     name: Arduino CLI (${{ matrix.board.name }}, DEBUG=${{ matrix.debug }})

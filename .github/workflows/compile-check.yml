@@ -52,7 +52,7 @@ jobs:
         debug: [true, false]
     steps:
       - uses: actions/checkout@v6
-      - uses: arduino/compile-sketches@v1
+      - uses: arduino/compile-sketches@8ad258013fe38f6d78e7e9d59c59ffbd9e8acf9d
         with:
           fqbn: ${{ matrix.board.fqbn }}
           platforms: ${{ matrix.board.platforms }}

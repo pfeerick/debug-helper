@@ -61,5 +61,5 @@ jobs:
           libraries: |
             - source-path: ./
               name: debug-helper
-          build-properties: >-
-            {"Global": ["compiler.cpp.extra_flags=-DDEBUG=${{ matrix.debug }}"]}
+          cli-compile-flags: |
+            - --build-property=compiler.cpp.extra_flags=-DDEBUG=${{ matrix.debug }}

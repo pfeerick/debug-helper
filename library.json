@@ -1,0 +1,23 @@
+{
+  "name": "debug-helper",
+  "version": "1.0.0",
+  "description": "Zero-overhead conditional debug macros for Arduino, ESP8266, and ESP32. Compiles away completely when DEBUG is not enabled; dumps detailed platform info via DebugInfo().",
+  "keywords": ["debug", "serial", "logging", "esp8266", "esp32", "arduino"],
+  "authors": [
+    {
+      "name": "Peter Feerick",
+      "email": "peter.feerick@gmail.com",
+      "url": "https://github.com/pfeerick",
+      "maintainer": true
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pfeerick/debug-helper.git"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/pfeerick/debug-helper",
+  "frameworks": "arduino",
+  "platforms": "*",
+  "headers": "debug-helper.h"
+}

@@ -1,0 +1,20 @@
+#######################################
+# Syntax Coloring Map for DebugHelper
+#######################################
+
+#######################################
+# Macros (KEYWORD2)
+#######################################
+DebugBegin	KEYWORD2
+DebugPrint	KEYWORD2
+DebugPrintln	KEYWORD2
+DebugPrintf	KEYWORD2
+DebugWrite	KEYWORD2
+DebugFlush	KEYWORD2
+DebugInfo	KEYWORD2
+
+#######################################
+# User-defined symbols (LITERAL1)
+#######################################
+DEBUG		LITERAL1
+DEBUG_OI	LITERAL1
